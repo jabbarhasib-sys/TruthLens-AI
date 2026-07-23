@@ -17,11 +17,14 @@ dist/
 build/
 out/
 
-# Python
+# Python & Databases
 __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+*.db
+*.sqlite
+*.sqlite3
 
 # IDE & OS files
 .DS_Store
