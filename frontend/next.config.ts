@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Use webpack bundler (Turbopack doesn't support CDN dynamic imports cleanly)
   bundlePagesRouterDependencies: true,
-  // Headers for canvas/WebGL support
+  // Headers for canvas/WebGL support and general security configurations
   async headers() {
     return [
       {
