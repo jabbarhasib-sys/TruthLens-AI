@@ -14,6 +14,10 @@ from app.models.user import User
 from app.models.analysis import Analysis
 from app.core.security import get_password_hash
 
+# Use timezone-aware UTC timestamps throughout
+_now = lambda: datetime.now(timezone.utc)
+
+
 def seed_db():
     print("Connecting to database and verifying tables exist...")
     Base.metadata.create_all(bind=engine)
@@ -38,7 +42,7 @@ def seed_db():
                 full_name="TruthLens Admin",
                 role="admin",
                 is_active=True,
-                created_at=datetime.utcnow()
+                created_at=_now()
             )
             db.add(admin_user)
             db.commit()
@@ -62,7 +66,7 @@ def seed_db():
                 full_name="Hackathon Judge",
                 role="user",
                 is_active=True,
-                created_at=datetime.utcnow()
+                created_at=_now()
             )
             db.add(user)
             db.commit()
@@ -79,12 +83,12 @@ def seed_db():
         print("Seeding News Analysis 1 (Artemis Mission - Low Risk)...")
         news_artemis = Analysis(
             id=str(uuid.uuid4()),
-            type="news",
+            analysis_type="news",
             query="NASA launches its new Artemis lunar rover to explore south pole water ice reserves.",
             status="completed",
             trust_score=96.0,
             risk_level="LOW",
-            created_at=datetime.utcnow(),
+            created_at=_now(),
             user_id=user.id,
             details={
                 "is_mock": True,
@@ -147,12 +151,12 @@ def seed_db():
         print("Seeding News Analysis 2 (Lemon Juice COVID Cure - Critical Risk)...")
         news_lemon = Analysis(
             id=str(uuid.uuid4()),
-            type="news",
+            analysis_type="news",
             query="Drinking freshly squeezed warm lemon juice in the morning completely cures COVID-19.",
             status="completed",
             trust_score=12.0,
             risk_level="CRITICAL",
-            created_at=datetime.utcnow(),
+            created_at=_now(),
             user_id=user.id,
             details={
                 "is_mock": True,
@@ -220,12 +224,12 @@ def seed_db():
         print("Seeding Image Analysis 1 (White House UFO - Critical Risk Deepfake)...")
         img_ufo = Analysis(
             id=str(uuid.uuid4()),
-            type="image",
+            analysis_type="image",
             query="leaked_whitehouse_ufo.jpg",
             status="completed",
             trust_score=8.5,
             risk_level="CRITICAL",
-            created_at=datetime.utcnow(),
+            created_at=_now(),
             user_id=user.id,
             details={
                 "is_mock": True,
@@ -298,12 +302,12 @@ def seed_db():
         print("Seeding Image Analysis 2 (Manhattan Bear - High Risk Photoshop)...")
         img_bear = Analysis(
             id=str(uuid.uuid4()),
-            type="image",
+            analysis_type="image",
             query="giant_bear_manhattan.png",
             status="completed",
             trust_score=26.0,
             risk_level="HIGH",
-            created_at=datetime.utcnow(),
+            created_at=_now(),
             user_id=user.id,
             details={
                 "is_mock": True,
@@ -379,12 +383,12 @@ def seed_db():
         print("Seeding Image Analysis 3 (Yosemite Sunrise - Low Risk Original)...")
         img_yosemite = Analysis(
             id=str(uuid.uuid4()),
-            type="image",
+            analysis_type="image",
             query="yosemite_sunrise_sony.jpg",
             status="completed",
             trust_score=97.8,
             risk_level="LOW",
-            created_at=datetime.utcnow(),
+            created_at=_now(),
             user_id=user.id,
             details={
                 "is_mock": True,

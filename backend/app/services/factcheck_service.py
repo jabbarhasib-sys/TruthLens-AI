@@ -3,6 +3,8 @@ TruthLens AI – Google Fact Check Service
 """
 from __future__ import annotations
 
+import asyncio
+import copy
 import logging
 from typing import Any, Final
 
@@ -14,11 +16,21 @@ logger = logging.getLogger("truthlens.factcheck")
 
 _FACT_CHECK_URL: Final[str] = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
 _TIMEOUT: Final[float] = 10.0
+_LANGUAGE_CODE: Final[str] = "en"
+_PAGE_SIZE: Final[int] = 10
+_MAX_RETRIES: Final[int] = 2
+_RETRY_STATUSES: Final[frozenset[int]] = frozenset([429, 500, 502, 503, 504])
 
-# Pre-built mock responses keyed by keyword frozenset
-_MOCK_RULES: list[tuple[frozenset[str], list[dict[str, Any]]]] = [
+# ---------------------------------------------------------------------------
+# Mock data – stored as read-only templates; always deep-copied before return
+# ---------------------------------------------------------------------------
+
+# Each entry is (keyword_substrings, mock_data).
+# Using substring matching (via `any(k in claim_lower for k in keywords)`)
+# instead of word-split frozensets so multi-word phrases like "area 51" match.
+_MOCK_RULES: list[tuple[tuple[str, ...], list[dict[str, Any]]]] = [
     (
-        frozenset(["alien", "ufo", "area 51"]),
+        ("alien", "ufo", "area 51"),
         [
             {
                 "claimText": "NASA confirmed alien spaceships have landed in Area 51.",
@@ -38,7 +50,7 @@ _MOCK_RULES: list[tuple[frozenset[str], list[dict[str, Any]]]] = [
         ],
     ),
     (
-        frozenset(["vaccine", "health", "covid", "magnetic"]),
+        ("vaccine", "covid", "magnetic"),
         [
             {
                 "claimText": "Vaccines make you magnetic.",
@@ -81,39 +93,69 @@ _GENERIC_MOCK: list[dict[str, Any]] = [
 
 class FactcheckService:
     def __init__(self) -> None:
-        self.api_key = settings.GOOGLE_API_KEY
+        # Use a persistent async client – reuses underlying TCP connection pool.
+        # Instantiated here; must be closed via aclose() in app lifespan.
         self._client = httpx.AsyncClient(timeout=_TIMEOUT)
 
     def _get_mock_response(self, claim: str) -> list[dict[str, Any]]:
-        """Return a relevant mock response based on keyword matching."""
-        claim_words = frozenset(claim.lower().split())
+        """Return a deep-copied relevant mock response based on substring matching."""
+        claim_lower = claim.lower()
         for keywords, mock_data in _MOCK_RULES:
-            if keywords & claim_words:  # frozenset intersection
-                return mock_data
-        # No keyword match — return the generic structured sandbox response
-        return _GENERIC_MOCK
+            if any(k in claim_lower for k in keywords):
+                return copy.deepcopy(mock_data)
+        return copy.deepcopy(_GENERIC_MOCK)
 
     async def check_claim(self, claim: str) -> list[dict[str, Any]]:
-        if not self.api_key:
+        # Read api_key at call time so hot-reloaded settings are picked up.
+        api_key = settings.GOOGLE_API_KEY
+        if not api_key:
             logger.warning("GOOGLE_API_KEY not set – Google Fact Check running in mock mode.")
             return self._get_mock_response(claim)
 
-        try:
-            response = await self._client.get(
-                _FACT_CHECK_URL,
-                params={"query": claim, "key": self.api_key, "languageCode": "en"},
-            )
-            if response.status_code == 200:
-                return response.json().get("claims", [])
-            logger.error(
-                "Google Fact Check API status=%d body=%s",
-                response.status_code,
-                response.text[:200],
-            )
-            return []
-        except Exception as exc:
-            logger.error("Google Fact Check API error: %s", exc, exc_info=True)
-            return []
+        params = {
+            "query": claim,
+            "key": api_key,
+            "languageCode": _LANGUAGE_CODE,
+            "pageSize": _PAGE_SIZE,
+        }
+
+        for attempt in range(_MAX_RETRIES + 1):
+            try:
+                response = await self._client.get(_FACT_CHECK_URL, params=params)
+
+                if response.status_code == 200:
+                    return response.json().get("claims", [])
+
+                if response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
+                    wait = 2 ** attempt
+                    logger.warning(
+                        "Google Fact Check status=%d attempt=%d/%d – retrying in %ds",
+                        response.status_code,
+                        attempt + 1,
+                        _MAX_RETRIES,
+                        wait,
+                    )
+                    await asyncio.sleep(wait)
+                    continue
+
+                logger.error(
+                    "Google Fact Check API status=%d body=%s",
+                    response.status_code,
+                    response.text[:200],
+                )
+                return []
+
+            except httpx.TimeoutException:
+                logger.error("Google Fact Check request timed out attempt=%d", attempt + 1)
+                if attempt < _MAX_RETRIES:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                return []
+            except httpx.HTTPError as exc:
+                logger.error("Google Fact Check HTTP error: %s", exc, exc_info=True)
+                return []
+
+        return []
 
     async def aclose(self) -> None:
         await self._client.aclose()

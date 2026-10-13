@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -88,7 +88,7 @@ def signup(user_in: UserCreate, db: Session = Depends(get_db)):
 def login(user_in: UserCreate, db: Session = Depends(get_db)):
     user = _authenticate_user(user_in.email, user_in.password, db)
     # Track last login timestamp
-    user.last_login = datetime.utcnow()
+    user.last_login = datetime.now(timezone.utc)
     db.commit()
     return {"access_token": create_access_token(subject=user.email), "token_type": "bearer"}
 
@@ -97,7 +97,7 @@ def login_oauth(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
     user = _authenticate_user(form_data.username, form_data.password, db)
-    user.last_login = datetime.utcnow()
+    user.last_login = datetime.now(timezone.utc)
     db.commit()
     return {"access_token": create_access_token(subject=user.email), "token_type": "bearer"}
 

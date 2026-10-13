@@ -143,54 +143,68 @@
   --tl-l: 39%;
 
   /* Semantic tokens */
-  --tl-emerald:     hsl(var(--tl-h), var(--tl-s), var(--tl-l));
-  --tl-emerald-dim: hsl(var(--tl-h), 60%, 32%);
-  --tl-emerald-glow:hsl(var(--tl-h), 90%, 55%);
-  --tl-teal:        hsl(175, 77%, 40%);
-  --tl-mint:        hsl(154, 63%, 55%);
-  --tl-red:         hsl(348, 100%, 65%);
-  --tl-amber:       hsl(38, 95%, 58%);
+  --tl-emerald:     hsl(var(--tl-h) var(--tl-s) var(--tl-l));
+  --tl-emerald-dim: hsl(var(--tl-h) 60% 32%);
+  --tl-emerald-glow:hsl(var(--tl-h) 90% 55%);
+  --tl-teal:        hsl(175 77% 40%);
+  --tl-mint:        hsl(154 63% 55%);
+  --tl-red:         hsl(348 100% 65%);
+  --tl-amber:       hsl(38 95% 58%);
 
   /* Background layers */
-  --tl-bg:          hsl(222, 47%, 4%);
-  --tl-bg-raised:   hsl(222, 40%, 7%);
-  --tl-bg-card:     hsl(222, 35%, 9%);
-  --tl-bg-hover:    hsl(222, 30%, 11%);
+  --tl-bg:          hsl(222 47% 4%);
+  --tl-bg-raised:   hsl(222 40% 7%);
+  --tl-bg-card:     hsl(222 35% 9%);
+  --tl-bg-hover:    hsl(222 30% 11%);
 
-  /* Glass surfaces */
-  --tl-glass-bg:    hsla(222, 40%, 100%, 0.04);
-  --tl-glass-hover: hsla(222, 40%, 100%, 0.07);
-  --tl-glass-border:hsla(222, 40%, 100%, 0.09);
-  --tl-glass-border-focus: hsl(var(--tl-h), var(--tl-s), 45%);
+  /* Glass surfaces — use modern hsl() with / alpha */
+  --tl-glass-bg:    hsl(222 40% 100% / 0.04);
+  --tl-glass-hover: hsl(222 40% 100% / 0.07);
+  --tl-glass-border:hsl(222 40% 100% / 0.09);
+  --tl-glass-border-focus: hsl(var(--tl-h) var(--tl-s) 45%);
 
   /* Focus ring */
-  --tl-focus-ring:  hsl(var(--tl-h), 80%, 50%);
-  --tl-focus-shadow:0 0 0 3px hsl(var(--tl-h), 80%, 50% / 0.25);
-
-  /* Typography */
-  --font-inter: 'Inter', sans-serif;
+  --tl-focus-ring:  hsl(var(--tl-h) 80% 50%);
+  --tl-focus-shadow:0 0 0 3px hsl(var(--tl-h) 80% 50% / 0.25);
 
   /* Transitions */
   --tl-transition-base: 180ms cubic-bezier(0.4, 0, 0.2, 1);
   --tl-transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ─── Light-mode brand token overrides ──────────────────────────────────── */
+/* Apply brand identity in light mode too, not just .dark */
+:root {
+  --primary: var(--tl-emerald);
+  --primary-foreground: hsl(0 0% 100%);
+  --ring: var(--tl-focus-ring);
+}
+
 /* ─── Dark Mode CSS Token Overrides ─────────────────────────────────────── */
 .dark {
   --background: var(--tl-bg);
-  --foreground: hsl(210, 20%, 96%);
+  --foreground: hsl(210 20% 96%);
   --card: var(--tl-bg-card);
-  --card-foreground: hsl(210, 15%, 94%);
+  --card-foreground: hsl(210 15% 94%);
   --primary: var(--tl-emerald);
-  --primary-foreground: hsl(0, 0%, 100%);
+  --primary-foreground: hsl(0 0% 100%);
   --ring: var(--tl-focus-ring);
   --border: var(--tl-glass-border);
   --input: var(--tl-glass-bg);
+
+  /* Hue-shifted chart colors for dark mode (accessible, on-brand) */
+  --chart-1: hsl(var(--tl-h) 80% 55%);   /* emerald */
+  --chart-2: hsl(175 70% 50%);            /* teal */
+  --chart-3: hsl(38 90% 55%);             /* amber */
+  --chart-4: hsl(348 80% 60%);            /* red */
+  --chart-5: hsl(262 70% 65%);            /* violet */
 }
 
-/* ─── Smooth Scrolling ──────────────────────────────────────────────────── */
-html {
-  scroll-behavior: smooth;
+/* ─── Smooth Scrolling (respect user motion preferences) ────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* ─── Custom Scrollbar ──────────────────────────────────────────────────── */
@@ -207,7 +221,7 @@ html {
 
 /* ─── Selection ─────────────────────────────────────────────────────────── */
 ::selection {
-  background: hsl(var(--tl-h), 70%, 40% / 0.4);
+  background: hsl(var(--tl-h) 70% 40% / 0.4);
   color: #fff;
 }
 
@@ -246,7 +260,21 @@ html {
 }
 
 /* ─── Interactive Element Transitions ───────────────────────────────────── */
+/*
+  Scoped to .tl-interactive to avoid conflicting with Framer Motion /
+  other animation libraries that manage their own transforms.
+  Add class="tl-interactive" to links and buttons that want this behaviour.
+*/
 a, button, [role="button"] {
+  transition:
+    color var(--tl-transition-base),
+    background-color var(--tl-transition-base),
+    border-color var(--tl-transition-base),
+    box-shadow var(--tl-transition-base),
+    opacity var(--tl-transition-base);
+}
+
+.tl-interactive {
   transition:
     color var(--tl-transition-base),
     background-color var(--tl-transition-base),
@@ -255,15 +283,15 @@ a, button, [role="button"] {
     opacity var(--tl-transition-base),
     transform var(--tl-transition-base);
 }
-a:active, button:active, [role="button"]:active {
+.tl-interactive:active {
   transform: scale(0.97);
 }
 
 /* ─── Typography Utilities ──────────────────────────────────────────────── */
 .glow-text {
   text-shadow:
-    0 0 20px hsl(var(--tl-h), 80%, 55% / 0.5),
-    0 0 60px hsl(var(--tl-h), 80%, 55% / 0.2);
+    0 0 20px hsl(var(--tl-h) 80% 55% / 0.5),
+    0 0 60px hsl(var(--tl-h) 80% 55% / 0.2);
 }
 
 .gradient-text {
@@ -275,12 +303,15 @@ a:active, button:active, [role="button"]:active {
 
 /* ─── Glow / Neon Borders ───────────────────────────────────────────────── */
 @keyframes neon-pulse {
-  0%, 100% { box-shadow: 0 0 8px  hsl(var(--tl-h), 80%, 45% / 0.3); }
-  50%       { box-shadow: 0 0 24px hsl(var(--tl-h), 80%, 55% / 0.7),
-                          0 0 48px hsl(var(--tl-h), 80%, 55% / 0.3); }
+  0%, 100% { box-shadow: 0 0 8px  hsl(var(--tl-h) 80% 45% / 0.3); }
+  50%       { box-shadow: 0 0 24px hsl(var(--tl-h) 80% 55% / 0.7),
+                          0 0 48px hsl(var(--tl-h) 80% 55% / 0.3); }
 }
 .neon-border {
-  animation: neon-pulse 2.5s ease-in-out infinite;
+  /* Respect user motion preferences (WCAG 2.1 §2.3.3) */
+  @media (prefers-reduced-motion: no-preference) {
+    animation: neon-pulse 2.5s ease-in-out infinite;
+  }
 }
 
 /* ─── Skeleton Shimmer ──────────────────────────────────────────────────── */
@@ -292,76 +323,74 @@ a:active, button:active, [role="button"]:active {
 .skeleton {
   background: linear-gradient(
     90deg,
-    hsl(222, 30%, 11%) 25%,
-    hsl(222, 25%, 16%) 50%,
-    hsl(222, 30%, 11%) 75%
+    hsl(222 30% 11%) 25%,
+    hsl(222 25% 16%) 50%,
+    hsl(222 30% 11%) 75%
   );
   background-size: 1200px 100%;
-  animation: skeleton-shimmer 1.6s ease-in-out infinite;
   border-radius: 0.5rem;
+  /* Respect user motion preferences (WCAG 2.1 §2.3.3) */
+  @media (prefers-reduced-motion: no-preference) {
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  }
 }
 
 /* ─── Accent Border Active State ────────────────────────────────────────── */
 .border-active {
   border-color: var(--tl-glass-border-focus) !important;
-  box-shadow: 0 0 0 1px hsl(var(--tl-h), 70%, 45% / 0.3) inset;
+  box-shadow: 0 0 0 1px hsl(var(--tl-h) 70% 45% / 0.3) inset;
 }
 
 /* ─── Print / PDF Export Styles ─────────────────────────────────────────── */
+/*
+  Override CSS variables at the root level for print instead of using
+  cascades of !important per selector. A single :root override propagates
+  through the entire design system cleanly.
+*/
 @media print {
+  @page {
+    margin: 1.5cm;
+  }
+
+  /* Override brand/theme variables for a white, high-contrast print surface */
+  :root,
+  .dark {
+    --background:      #ffffff;
+    --foreground:      #111111;
+    --card:            #f9f9f9;
+    --card-foreground: #111111;
+    --border:          #e5e7eb;
+    --tl-bg:           #ffffff;
+    --tl-bg-card:      #f9f9f9;
+    --tl-glass-bg:     #f9f9f9;
+    --tl-glass-border: #e5e7eb;
+    /* Print-safe brand accent colors */
+    --tl-emerald:      #0d9488;
+    --tl-red:          #dc2626;
+    --tl-amber:        #d97706;
+  }
+
   body {
-    background: #ffffff !important;
-    color: #111111 !important;
+    background: #ffffff;
+    color: #111111;
   }
 
-  /* Hide nav buttons and interactive controls */
-  nav button,
-  nav a:not([href^="/"]),
-  .share-button-wrapper {
-    display: none !important;
-  }
-
-  /* Flatten glassmorphism cards for print */
+  /* Flatten glassmorphism — no blur on paper */
   .glass-card,
-  [class*="bg-white/"],
-  [class*="border-white/"] {
-    background: #f9f9f9 !important;
-    border: 1px solid #e5e7eb !important;
-    backdrop-filter: none !important;
-    color: #111111 !important;
-  }
-
-  /* Force text colors */
-  .text-white,
-  .text-white\/95,
-  .text-white\/90,
-  .text-white\/80,
-  .text-white\/70,
-  .text-white\/60,
-  .text-white\/50,
-  .text-white\/40,
-  .text-white\/30 {
-    color: #333333 !important;
-  }
-
-  /* Prevent page breaks inside cards */
-  .glass-card {
+  .glass-elevated {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  /* Hide decorative backgrounds */
+  /* Hide nav buttons, interactive controls, and decorative blurs */
+  nav button,
+  nav a:not([href^="/"]),
+  .share-button-wrapper,
   .blur-3xl,
-  [class*="blur-"] {
-    display: none !important;
-  }
-
-  /* Emerald → print-safe teal */
-  .text-emerald-400 { color: #0d9488 !important; }
-  .text-red-400 { color: #dc2626 !important; }
-  .text-yellow-400 { color: #d97706 !important; }
-
-  @page {
-    margin: 1.5cm;
+  [class*="blur-"],
+  .neon-border {
+    display: none;
   }
 }
