@@ -1,0 +1,48 @@
+# Render Blueprint for TruthLens AI Backend
+# Deploy with: https://dashboard.render.com/blueprints/... (click "Deploy" on this repo)
+# Or: `render deploy --blueprint render.yaml` from CLI
+#
+# This defines the web service, a managed Postgres database, and a Redis cache.
+# The app runs on SQLite by default; set DATABASE_URL to a Postgres URL for prod.
+
+services:
+  - type: web
+    name: truthlens-api
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: |
+      pip install -r requirements.txt
+      python migrate.py
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PROJECT_NAME
+        value: TruthLens AI API
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "10080"
+      - key: DATABASE_URL
+        fromDatabase:
+          databaseName: truthlens-db
+    databases:
+      - name: truthlens-db
+        databaseName: truthlens
+        plan: starter
+    redis:
+      - name: truthlens-cache
+        plan: starter
+        maxmemoryPolicy: allkeys-lru
+
+databases:
+  - name: truthlens-db
+    databaseName: truthlens
+    plan: starter
+    region: oregon
+
+redis:
+  - name: truthlens-cache
+    plan: starter
+    region: oregon

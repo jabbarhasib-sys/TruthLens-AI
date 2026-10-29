@@ -5,7 +5,9 @@ Adds new columns to the users table for the expanded profile system.
 import sqlite3
 import os
 
-db_path = 'truthlens.db'
+# Match app/core/config.py: Vercel's task dir is read-only, so route the DB
+# to /tmp when running on Vercel; otherwise use the local relative path.
+db_path = '/tmp/truthlens.db' if os.environ.get('VERCEL_ENV') else 'truthlens.db'
 
 if not os.path.exists(db_path):
     print(f"Database '{db_path}' not found. It will be created fresh on next startup.")

@@ -1,0 +1,23 @@
+# Ignore everything outside the Next.js app that might confuse the build
+backend
+docs
+infrastructure
+scripts
+tests
+ai
+assets
+libs
+truthlens-ai
+*.docx
+*.py
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+.venv
+__pycache__
+*.pyc
+alembic
+pyproject.toml
+pnpm-workspace.yaml

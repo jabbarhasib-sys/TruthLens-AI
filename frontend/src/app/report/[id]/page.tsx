@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Shield, ArrowLeft, Calendar, FileText, AlertTriangle, AlertCircle, CheckCircle, ExternalLink, BarChart2, Download, Mic, Globe, Tag, TrendingUp, Twitter, Youtube, Zap } from 'lucide-react';
+import { Shield, ArrowLeft, Calendar, FileText, AlertTriangle, AlertCircle, CheckCircle, ExternalLink, BarChart2, Download, Mic, Globe, Tag, TrendingUp, X, Video, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { ShareButton } from '@/components/ui/share-button';
@@ -270,9 +270,9 @@ export default function ReportDetailPage() {
             <div className="mt-4 p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold">
                 {details.url_context.platform_type === 'twitter' ? (
-                  <Twitter className="w-3.5 h-3.5 text-blue-400" />
+                  <X className="w-3.5 h-3.5 text-blue-400" />
                 ) : details.url_context.platform_type === 'youtube' ? (
-                  <Youtube className="w-3.5 h-3.5 text-red-500" />
+                  <Video className="w-3.5 h-3.5 text-red-500" />
                 ) : (
                   <Globe className="w-3.5 h-3.5" />
                 )}

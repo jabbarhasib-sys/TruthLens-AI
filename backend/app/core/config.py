@@ -2,16 +2,25 @@ import os
 from typing import Optional
 from pydantic_settings import BaseSettings
 
+# Vercel's Python runtime mounts the task directory read-only, so the default
+# relative SQLite path would fail to open. On Vercel, route the DB to /tmp
+# (explicitly writable) unless the user set a real DATABASE_URL.
+_DEFAULT_DATABASE_URL = (
+    "sqlite:////tmp/truthlens.db"
+    if os.environ.get("VERCEL_ENV")
+    else "sqlite:///./truthlens.db"
+)
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "TruthLens AI API"
     API_V1_STR: str = "/api"
-    
+
     # Security
     JWT_SECRET: str = "supersecretjwtkeyforprototype12345"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
-    
+
     # DB
-    DATABASE_URL: str = "sqlite:///./truthlens.db"
+    DATABASE_URL: str = _DEFAULT_DATABASE_URL
     
     # Redis
     REDIS_URL: Optional[str] = None
