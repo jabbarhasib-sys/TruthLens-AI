@@ -348,7 +348,7 @@ async def run_news_verification(
         logger.info("news_pipeline cache_hit claim=%r", claim[:60])
         analysis = Analysis(
             id=str(uuid.uuid4()),
-            type="news",
+            analysis_type="news",
             query=claim,
             status="completed",
             trust_score=cached_result["trust_score"],
@@ -364,7 +364,7 @@ async def run_news_verification(
     # ── 2. Create a "processing" DB row ───────────────────────────────────────
     analysis = Analysis(
         id=str(uuid.uuid4()),
-        type="news",
+        analysis_type="news",
         query=claim,
         status="processing",
         user_id=user_id,

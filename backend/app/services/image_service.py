@@ -301,7 +301,7 @@ async def run_image_verification(
             logger.info("image_pipeline cache_hit url=%r", image_url)
             analysis = Analysis(
                 id=str(uuid.uuid4()),
-                type="image",
+                analysis_type="image",
                 query=image_url,
                 status="completed",
                 trust_score=cached_result["trust_score"],
@@ -331,7 +331,7 @@ async def run_image_verification(
                 details["cached_match"] = True
                 analysis = Analysis(
                     id=str(uuid.uuid4()),
-                    type="image",
+                    analysis_type="image",
                     query=image_url or filename,
                     status="completed",
                     trust_score=past.trust_score,
@@ -348,7 +348,7 @@ async def run_image_verification(
     # ── 2. Create "processing" row ────────────────────────────────────────────
     analysis = Analysis(
         id=str(uuid.uuid4()),
-        type="image",
+        analysis_type="image",
         query=image_url or filename,
         status="processing",
         user_id=user_id,
